@@ -1,0 +1,20 @@
+-- Seed placeholder products (from the original template demo data)
+insert into public.products (title, image, category, price, popularity, stock) values
+  ('Luxury Dress', 'product image 1.jpg', 'special-edition', 3500, 5, 10),
+  ('Luxury Black Clothing', 'product image 2.jpg', 'luxury-collection', 1050, 4, 20),
+  ('Luxury Blue Dress', 'product image 3.jpg', 'summer-edition', 5000, 3, 5),
+  ('Special Brown Dress', 'product image 4.jpg', 'unique-collection', 2500, 2, 15),
+  ('Special Luxury Dress', 'product image 5.jpg', 'unique-collection', 5200, 1, 0),
+  ('Super Luxury Dress', 'product image 6.jpg', 'luxury-collection', 8500, 20, 20),
+  ('Luxury Brown Dress', 'product image 7.jpg', 'luxury-collection', 4500, 5, 500),
+  ('Premium Brown Dress', 'product image 8.jpg', 'unique-collection', 4500, 5, 500),
+  ('Luxury White Dress', 'product image 9.jpg', 'luxury-collection', 4500, 5, 500),
+  ('Brown Limited Collection', 'product image 10.jpg', 'unique-collection', 4500, 5, 500),
+  ('Golden Premium T-shirt', 'product image 11.jpg', 'luxury-collection', 4500, 5, 500),
+  ('Golden T-shirt', 'product image 12.jpg', 'summer-edition', 4500, 5, 500),
+  ('White Premium T-shirt', 'product image 13.jpg', 'special-edition', 4500, 5, 500),
+  ('Brown Premium T-shirt', 'product image 14.jpg', 'special-edition', 4500, 5, 500),
+  ('Brown Special Clothing', 'product image 15.jpg', 'special-edition', 4500, 5, 500),
+  ('White Special Clothing', 'product image 16.jpg', 'special-edition', 4500, 5, 500),
+  ('Dark Special Clothing', 'product image 17.jpg', 'special-edition', 4500, 5, 500),
+  ('Brown Premium Clothing', 'product image 18.jpg', 'unique-collection', 4500, 5, 500);
