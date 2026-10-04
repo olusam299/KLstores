@@ -177,7 +177,7 @@ const SingleProduct = () => {
         <h2 className="text-black/90 text-5xl mt-24 mb-12 text-center max-lg:text-4xl">
           Similar Products
         </h2>
-        <div className="flex flex-wrap justify-between items-center gap-y-8 mt-12 max-xl:justify-start max-xl:gap-5 ">
+        <div className="grid grid-cols-3 gap-2 sm:gap-5 lg:gap-8 mt-12">
           {products
             .filter((p: Product) => p.id !== params.id)
             .slice(0, 3)

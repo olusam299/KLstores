@@ -3,7 +3,7 @@ import { supabase } from "./supabase";
 type ProductRow = Omit<Product, "price"> & { price: number | string };
 
 const SELECT_FIELDS =
-  "id, title, image, category, price, popularity, stock, featured, type";
+  "id, title, image, category, price, popularity, stock, featured, type, promo, promo_name";
 
 const normalize = (row: ProductRow): Product => ({
   ...row,

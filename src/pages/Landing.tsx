@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { Banner, CategoryNav, CategoriesSection, HomeCollectionSection } from "../components";
+import {
+  Banner,
+  CategoryNav,
+  CategoriesSection,
+  HomeCollectionSection,
+  PromoHero,
+} from "../components";
 import { getProducts } from "../lib/products";
 
 const Landing = () => {
@@ -16,6 +22,7 @@ const Landing = () => {
       <Banner />
       <CategoryNav />
       <HomeCollectionSection products={products} />
+      <PromoHero />
       <CategoriesSection products={products} />
     </>
   );

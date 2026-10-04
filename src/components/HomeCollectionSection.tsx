@@ -30,7 +30,7 @@ const HomeCollectionSection = ({ products }: { products: Product[] }) => {
         </h2>
       </div>
 
-      <div className="max-w-screen-2xl mx-auto mt-8 px-5 max-[400px]:px-3 flex gap-4 overflow-x-auto pb-2">
+      <div className="max-w-screen-2xl mx-auto mt-8 px-5 max-[400px]:px-3 flex gap-4 overflow-x-auto pb-2 [&>*:first-child]:ml-auto">
         {TYPES.map((type) => (
           <CollectionTypeFrame
             key={type}
@@ -42,7 +42,7 @@ const HomeCollectionSection = ({ products }: { products: Product[] }) => {
         ))}
       </div>
 
-      <ProductGridWrapper limit={6} type={activeType}>
+      <ProductGridWrapper limit={9} type={activeType}>
         <ProductGrid />
       </ProductGridWrapper>
     </div>

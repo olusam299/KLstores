@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { supabase } from "../lib/supabase";
 import { createOrder } from "../lib/orders";
+import { nanoid } from "nanoid";
 
 const inputClass =
   "block w-full py-2 indent-2 border-gray-300 outline-none focus:border-gray-400 border border shadow-sm sm:text-sm";
@@ -96,7 +97,7 @@ const Checkout = () => {
     return true;
   };
 
-  const handlePaystackPayment = () => {
+  const handlePaystackPayment = async () => {
     if (!validateContact() || !userId) return;
 
     if (!window.PaystackPop) {
@@ -112,11 +113,34 @@ const Checkout = () => {
 
     setIsPaying(true);
 
+    // The order is saved as 'pending' BEFORE the popup opens, tied to a
+    // unique reference. Only the server (paystack-verify / the webhook) can
+    // flip it to 'paid', after checking the amount with Paystack.
+    const reference = `KL-${nanoid(16)}`;
+    try {
+      await createOrder({
+        userId,
+        paymentMethod: "paystack",
+        status: "pending",
+        total,
+        shippingAddress: contact.address,
+        shippingPhone: contact.phone,
+        paystackReference: reference,
+        items: productsInCart,
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Please try again";
+      toast.error(`Couldn't start payment: ${message}`);
+      setIsPaying(false);
+      return;
+    }
+
     const handler = window.PaystackPop.setup({
       key: publicKey,
       email: contact.email,
       amount: Math.round(total * 100), // Paystack expects the amount in kobo
       currency: "NGN",
+      ref: reference,
       metadata: {
         custom_fields: [
           {
@@ -126,26 +150,20 @@ const Checkout = () => {
           },
         ],
       },
-      callback: (transaction) => {
+      callback: () => {
         (async () => {
           try {
-            await createOrder({
-              userId,
-              paymentMethod: "paystack",
-              status: "paid",
-              total,
-              shippingAddress: contact.address,
-              shippingPhone: contact.phone,
-              paystackReference: transaction.reference,
-              items: productsInCart,
+            const { error } = await supabase.functions.invoke("paystack-verify", {
+              body: { reference },
             });
+            if (error) throw error;
             dispatch(clearCart());
             toast.success("Payment successful — order placed");
             navigate("/order-confirmation");
           } catch {
             toast.error(
-              "Payment went through, but saving the order failed. Contact support with reference " +
-                transaction.reference
+              "We couldn't confirm your payment yet. If you were charged, your order will update automatically. Reference: " +
+                reference
             );
           } finally {
             setIsPaying(false);

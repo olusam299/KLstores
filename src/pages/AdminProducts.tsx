@@ -4,6 +4,11 @@ import toast from "react-hot-toast";
 import { supabase } from "../lib/supabase";
 import { getProducts } from "../lib/products";
 import { createProduct, deleteProduct, updateProductStock } from "../lib/admin";
+import {
+  getPromoSettings,
+  updateProductPromo,
+  updatePromoSettings,
+} from "../lib/promo";
 
 const CATEGORIES = [
   "women-clothing",
@@ -36,6 +41,9 @@ const AdminProducts = () => {
   const [featured, setFeatured] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
 
+  const [promoEnabled, setPromoEnabled] = useState(false);
+  const [promoDiscount, setPromoDiscount] = useState("20");
+
   const refreshProducts = async () => setProducts(await getProducts());
 
   useEffect(() => {
@@ -63,6 +71,10 @@ const AdminProducts = () => {
 
       setAccess("allowed");
       refreshProducts();
+      getPromoSettings().then((s) => {
+        setPromoEnabled(s.promo_enabled);
+        setPromoDiscount(String(s.promo_discount));
+      });
     };
     check();
   }, [navigate]);
@@ -132,6 +144,42 @@ const AdminProducts = () => {
     }
   };
 
+  const handleSavePromoSettings = async () => {
+    const discount = Math.round(Number(promoDiscount));
+    if (!Number.isFinite(discount) || discount < 1 || discount > 90) {
+      toast.error("Discount must be between 1 and 90");
+      return;
+    }
+    try {
+      await updatePromoSettings({
+        promo_enabled: promoEnabled,
+        promo_discount: discount,
+      });
+      setPromoDiscount(String(discount));
+      toast.success("Promo settings saved");
+    } catch {
+      toast.error("Couldn't save promo settings");
+    }
+  };
+
+  const handlePromoChange = async (
+    product: Product,
+    promo: boolean,
+    promoName: string | null
+  ) => {
+    setProducts((prev) =>
+      prev.map((p) =>
+        p.id === product.id ? { ...p, promo, promo_name: promoName } : p
+      )
+    );
+    try {
+      await updateProductPromo(product.id, promo, promoName);
+    } catch {
+      toast.error("Couldn't update promo");
+      refreshProducts();
+    }
+  };
+
   if (access === "checking") {
     return <div className="max-w-screen-2xl mx-auto pt-20 px-5">Loading...</div>;
   }
@@ -147,6 +195,44 @@ const AdminProducts = () => {
   return (
     <div className="max-w-screen-2xl mx-auto pt-20 px-5 pb-24 max-[400px]:px-3">
       <h1 className="text-3xl font-bold mb-8">Manage Products</h1>
+
+      <div className="bg-white border border-gray-200 p-5 mb-12 max-w-3xl flex flex-wrap items-end gap-6">
+        <h2 className="w-full text-lg font-medium">Promo of the day</h2>
+        <div className="flex items-center gap-2 pb-2">
+          <input
+            type="checkbox"
+            id="promoEnabled"
+            checked={promoEnabled}
+            onChange={(e) => setPromoEnabled(e.target.checked)}
+          />
+          <label htmlFor="promoEnabled" className="text-sm font-medium text-gray-700">
+            Show promo section on the home page
+          </label>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Save (%)</label>
+          <input
+            type="number"
+            min="1"
+            max="90"
+            className={`${inputClass} w-24`}
+            value={promoDiscount}
+            onChange={(e) => setPromoDiscount(e.target.value)}
+          />
+        </div>
+        <button
+          type="button"
+          onClick={handleSavePromoSettings}
+          className="text-white bg-brand px-6 h-10"
+        >
+          Save promo settings
+        </button>
+        <p className="w-full text-sm text-gray-500">
+          Tick "Promo" on a product below to include it. The section stays
+          hidden unless it is switched on and at least one product is ticked.
+          The percentage is a label only: it doesn't change prices at checkout.
+        </p>
+      </div>
 
       <form
         onSubmit={handleAddProduct}
@@ -257,6 +343,8 @@ const AdminProducts = () => {
               <th className="py-3 px-4 border-b">Price</th>
               <th className="py-3 px-4 border-b">Stock</th>
               <th className="py-3 px-4 border-b">Featured</th>
+              <th className="py-3 px-4 border-b">Promo</th>
+              <th className="py-3 px-4 border-b">Promo name</th>
               <th className="py-3 px-4 border-b">Actions</th>
             </tr>
           </thead>
@@ -283,6 +371,29 @@ const AdminProducts = () => {
                 </td>
                 <td className="py-2 px-4 border-b text-center">
                   {product.featured ? "Yes" : ""}
+                </td>
+                <td className="py-2 px-4 border-b text-center">
+                  <input
+                    type="checkbox"
+                    checked={product.promo}
+                    onChange={(e) =>
+                      handlePromoChange(product, e.target.checked, product.promo_name)
+                    }
+                  />
+                </td>
+                <td className="py-2 px-4 border-b">
+                  <input
+                    type="text"
+                    placeholder={product.title}
+                    className="w-44 h-8 indent-1 border border-gray-300"
+                    defaultValue={product.promo_name ?? ""}
+                    onBlur={(e) => {
+                      const value = e.target.value.trim() || null;
+                      if (value !== product.promo_name) {
+                        handlePromoChange(product, product.promo, value);
+                      }
+                    }}
+                  />
                 </td>
                 <td className="py-2 px-4 border-b">
                   <button

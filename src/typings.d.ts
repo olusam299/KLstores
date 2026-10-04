@@ -8,9 +8,16 @@ interface Product {
   stock: number;
   featured: boolean;
   type: string | null;
+  promo: boolean;
+  promo_name: string | null;
 }
 
-interface ProductInCart extends Product {
+interface PromoSettings {
+  promo_enabled: boolean;
+  promo_discount: number;
+}
+
+interface ProductInCart extends Omit<Product, "promo" | "promo_name"> {
   id: string;
   productId: string;
   quantity: number;

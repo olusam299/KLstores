@@ -5,8 +5,8 @@ export default {
     extend: {
       colors: {
         brand: {
-          DEFAULT: "#d92654", // darker shade so white text stays readable
-          light: "#f26a8d", // original theme pink, for decorative use
+          DEFAULT: "#B08D3C", // champagne gold, deep enough for white text on buttons
+          light: "#E6C98B", // light champagne, for decorative use
         },
       },
     },
