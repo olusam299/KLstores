@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { getOrders, OrderRow } from "../lib/orderHistory";
 import { formatDate } from "../utils/formatDate";
+import { formatNaira } from "../utils/formatNaira";
 
 const statusLabel: Record<string, string> = {
   pending: "Pending (awaiting WhatsApp payment)",
@@ -71,7 +72,7 @@ const OrderHistory = () => {
                     {formatDate(order.created_at)}
                   </td>
                   <td className="py-3 px-4 border-b text-center">
-                    ${order.total}
+                    {formatNaira(order.total)}
                   </td>
                   <td className="py-3 px-4 border-b text-center capitalize">
                     {order.payment_method}

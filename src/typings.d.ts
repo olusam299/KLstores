@@ -26,35 +26,6 @@ interface ProductInCart extends Omit<Product, "promo" | "promo_name"> {
   stock: number;
 }
 
-interface PaystackTransaction {
-  reference: string;
-  status: string;
-  trans: string;
-  transaction: string;
-  message: string;
-}
-
-interface PaystackSetupOptions {
-  key: string;
-  email: string;
-  amount: number; // in kobo (smallest currency unit)
-  currency?: string;
-  ref?: string;
-  metadata?: Record<string, unknown>;
-  callback: (transaction: PaystackTransaction) => void;
-  onClose: () => void;
-}
-
-interface PaystackPopInstance {
-  openIframe: () => void;
-}
-
-interface Window {
-  PaystackPop?: {
-    setup: (options: PaystackSetupOptions) => PaystackPopInstance;
-  };
-}
-
 interface User {
   id: string;
   name: string;

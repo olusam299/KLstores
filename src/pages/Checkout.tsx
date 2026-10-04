@@ -7,7 +7,8 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { supabase } from "../lib/supabase";
 import { createOrder } from "../lib/orders";
-import { nanoid } from "nanoid";
+import { formatNaira } from "../utils/formatNaira";
+import { computeTax, getTaxEnabled } from "../lib/tax";
 
 const inputClass =
   "block w-full py-2 indent-2 border-gray-300 outline-none focus:border-gray-400 border border shadow-sm sm:text-sm";
@@ -33,11 +34,15 @@ const Checkout = () => {
     phone: "",
     address: "",
   });
-  const [isPaying, setIsPaying] = useState(false);
+  const [isSending, setIsSending] = useState(false);
 
-  const shipping = subtotal ? 5 : 0;
-  const tax = subtotal ? subtotal / 5 : 0;
-  const total = subtotal ? subtotal + shipping + tax : 0;
+  const [taxEnabled, setTaxEnabledState] = useState(true);
+  useEffect(() => {
+    getTaxEnabled().then(setTaxEnabledState);
+  }, []);
+  const tax = computeTax(subtotal, taxEnabled);
+  // Shipping is agreed privately with the seller on WhatsApp, not charged here.
+  const total = subtotal ? subtotal + tax : 0;
 
   useEffect(() => {
     const load = async () => {
@@ -97,95 +102,13 @@ const Checkout = () => {
     return true;
   };
 
-  const handlePaystackPayment = async () => {
-    if (!validateContact() || !userId) return;
-
-    if (!window.PaystackPop) {
-      toast.error("Payment system failed to load. Please refresh and try again.");
-      return;
-    }
-
-    const publicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY as string;
-    if (!publicKey) {
-      toast.error("Payment isn't configured yet. Set VITE_PAYSTACK_PUBLIC_KEY.");
-      return;
-    }
-
-    setIsPaying(true);
-
-    // The order is saved as 'pending' BEFORE the popup opens, tied to a
-    // unique reference. Only the server (paystack-verify / the webhook) can
-    // flip it to 'paid', after checking the amount with Paystack.
-    const reference = `KL-${nanoid(16)}`;
-    try {
-      await createOrder({
-        userId,
-        paymentMethod: "paystack",
-        status: "pending",
-        total,
-        shippingAddress: contact.address,
-        shippingPhone: contact.phone,
-        paystackReference: reference,
-        items: productsInCart,
-      });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Please try again";
-      toast.error(`Couldn't start payment: ${message}`);
-      setIsPaying(false);
-      return;
-    }
-
-    const handler = window.PaystackPop.setup({
-      key: publicKey,
-      email: contact.email,
-      amount: Math.round(total * 100), // Paystack expects the amount in kobo
-      currency: "NGN",
-      ref: reference,
-      metadata: {
-        custom_fields: [
-          {
-            display_name: "Customer",
-            variable_name: "customer",
-            value: `${contact.firstName} ${contact.lastName}`,
-          },
-        ],
-      },
-      callback: () => {
-        (async () => {
-          try {
-            const { error } = await supabase.functions.invoke("paystack-verify", {
-              body: { reference },
-            });
-            if (error) throw error;
-            dispatch(clearCart());
-            toast.success("Payment successful — order placed");
-            navigate("/order-confirmation");
-          } catch {
-            toast.error(
-              "We couldn't confirm your payment yet. If you were charged, your order will update automatically. Reference: " +
-                reference
-            );
-          } finally {
-            setIsPaying(false);
-          }
-        })();
-      },
-      onClose: () => {
-        setIsPaying(false);
-      },
-    });
-    handler.openIframe();
-  };
-
   const handleWhatsAppContact = async () => {
-    if (!validateContact() || !userId) return;
+    if (!validateContact() || !userId || isSending) return;
 
+    setIsSending(true);
     try {
       await createOrder({
-        userId,
         paymentMethod: "whatsapp",
-        status: "pending",
-        total,
         shippingAddress: contact.address,
         shippingPhone: contact.phone,
         items: productsInCart,
@@ -193,17 +116,19 @@ const Checkout = () => {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Please try again";
       toast.error(`Couldn't save your order: ${message}`);
+      setIsSending(false);
       return;
     }
 
     const itemLines = productsInCart
-      .map((p) => `- ${p.title} (${p.color}, ${p.size}) x${p.quantity} - $${p.price * p.quantity}`)
+      .map((p) => `- ${p.title} (${p.color}, ${p.size}) x${p.quantity} - ${formatNaira(p.price * p.quantity)}`)
       .join("\n");
 
     const message =
       `Hi KLstores! I'd like to pay for my order.\n\n` +
       `${itemLines}\n\n` +
-      `Total: $${total}\n\n` +
+      `Total (excl. shipping): ${formatNaira(total)}\n\n` +
+      `Please let me know the delivery fee.\n\n` +
       `Name: ${contact.firstName} ${contact.lastName}\n` +
       `Phone: ${contact.phone}\n` +
       `Delivery address: ${contact.address}`;
@@ -321,24 +246,16 @@ const Checkout = () => {
             <div className="mt-10 border-t border-gray-200 pt-10">
               <h2 className="text-lg font-medium text-gray-900">Payment</h2>
               <p className="mt-2 text-sm text-gray-500">
-                Pay securely online, or send your order to us on WhatsApp and
-                pay directly with the seller.
+                Send your order to us on WhatsApp and pay directly with the
+                seller.
               </p>
 
               <div className="mt-6 flex flex-col gap-3">
                 <button
                   type="button"
-                  disabled={isPaying}
-                  onClick={handlePaystackPayment}
-                  className="text-white bg-brand text-center text-xl font-normal tracking-[0.6px] leading-[72px] w-full h-12 flex items-center justify-center max-md:text-base disabled:opacity-60"
-                >
-                  {isPaying ? "Processing..." : "Pay with Paystack"}
-                </button>
-
-                <button
-                  type="button"
+                  disabled={isSending}
                   onClick={handleWhatsAppContact}
-                  className="text-white bg-[#25D366] text-center text-xl font-normal tracking-[0.6px] leading-[72px] w-full h-12 flex items-center justify-center gap-2 max-md:text-base"
+                  className="text-white bg-[#25D366] text-center text-xl font-normal tracking-[0.6px] leading-[72px] w-full h-12 flex items-center justify-center gap-2 max-md:text-base disabled:opacity-60"
                 >
                   <FaWhatsapp className="text-2xl" />
                   Contact to Pay
@@ -390,7 +307,7 @@ const Checkout = () => {
 
                       <div className="flex flex-1 items-end justify-between pt-2">
                         <p className="mt-1 text-sm font-medium text-gray-900">
-                          ${product?.price}
+                          {formatNaira(product?.price ?? 0)}
                         </p>
 
                         <div className="ml-4">
@@ -404,19 +321,23 @@ const Checkout = () => {
               <dl className="space-y-6 border-t border-gray-200 px-4 py-6 sm:px-6">
                 <div className="flex items-center justify-between">
                   <dt className="text-sm">Subtotal</dt>
-                  <dd className="text-sm font-medium text-gray-900">${subtotal}</dd>
+                  <dd className="text-sm font-medium text-gray-900">{formatNaira(subtotal)}</dd>
                 </div>
                 <div className="flex items-center justify-between">
                   <dt className="text-sm">Shipping</dt>
-                  <dd className="text-sm font-medium text-gray-900">${shipping}</dd>
+                  <dd className="text-sm text-gray-500 text-right">
+                    Agreed with the seller on WhatsApp
+                  </dd>
                 </div>
-                <div className="flex items-center justify-between">
-                  <dt className="text-sm">Taxes</dt>
-                  <dd className="text-sm font-medium text-gray-900">${tax}</dd>
-                </div>
+                {taxEnabled && (
+                  <div className="flex items-center justify-between">
+                    <dt className="text-sm">Tax (7.5%)</dt>
+                    <dd className="text-sm font-medium text-gray-900">{formatNaira(tax)}</dd>
+                  </div>
+                )}
                 <div className="flex items-center justify-between border-t border-gray-200 pt-6">
-                  <dt className="text-base font-medium">Total</dt>
-                  <dd className="text-base font-medium text-gray-900">${total}</dd>
+                  <dt className="text-base font-medium">Total (excl. shipping)</dt>
+                  <dd className="text-base font-medium text-gray-900">{formatNaira(total)}</dd>
                 </div>
               </dl>
             </div>

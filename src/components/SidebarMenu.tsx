@@ -78,12 +78,20 @@ const SidebarMenu = ({
             {loginStatus ? (
               <>
                 {isAdmin && (
-                  <Link
-                    to="/admin/products"
-                    className="py-2 border-y border-brand w-full block flex justify-center"
-                  >
-                    Admin
-                  </Link>
+                  <>
+                    <Link
+                      to="/admin/products"
+                      className="py-2 border-y border-brand w-full block flex justify-center"
+                    >
+                      Admin
+                    </Link>
+                    <Link
+                      to="/admin/orders"
+                      className="py-2 border-y border-brand w-full block flex justify-center"
+                    >
+                      Orders
+                    </Link>
+                  </>
                 )}
                 <button
                   onClick={logout}

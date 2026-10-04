@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { formatCategoryName } from "../utils/formatCategoryName";
+import { formatNaira } from "../utils/formatNaira";
 
 const ProductItem = ({
   id,
@@ -36,7 +37,7 @@ const ProductItem = ({
         {formatCategoryName(category)}
       </p>
       <p className="text-black text-sm sm:text-lg lg:text-2xl text-center font-bold">
-        ${price}
+        {formatNaira(price)}
       </p>
       <div className="w-full flex flex-col gap-1">
         <Link

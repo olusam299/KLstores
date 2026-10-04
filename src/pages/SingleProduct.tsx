@@ -14,6 +14,7 @@ import WithNumberInputWrapper from "../utils/withNumberInputWrapper";
 import { formatCategoryName } from "../utils/formatCategoryName";
 import toast from "react-hot-toast";
 import { getProduct, getProducts } from "../lib/products";
+import { formatNaira } from "../utils/formatNaira";
 
 const SingleProduct = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -88,7 +89,7 @@ const SingleProduct = () => {
               <p className="text-base text-brand">
                 {formatCategoryName(singleProduct?.category || "")}
               </p>
-              <p className="text-base font-bold">${ singleProduct?.price }</p>
+              <p className="text-base font-bold">{formatNaira(singleProduct?.price ?? 0)}</p>
             </div>
           </div>
           <div className="flex flex-col gap-2">

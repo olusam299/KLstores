@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { supabase } from "../lib/supabase";
 import { getProducts } from "../lib/products";
@@ -9,6 +9,8 @@ import {
   updateProductPromo,
   updatePromoSettings,
 } from "../lib/promo";
+import { formatNaira } from "../utils/formatNaira";
+import { getTaxEnabled, setTaxEnabled } from "../lib/tax";
 
 const CATEGORIES = [
   "women-clothing",
@@ -43,6 +45,7 @@ const AdminProducts = () => {
 
   const [promoEnabled, setPromoEnabled] = useState(false);
   const [promoDiscount, setPromoDiscount] = useState("20");
+  const [taxOn, setTaxOn] = useState(true);
 
   const refreshProducts = async () => setProducts(await getProducts());
 
@@ -71,6 +74,7 @@ const AdminProducts = () => {
 
       setAccess("allowed");
       refreshProducts();
+      getTaxEnabled().then(setTaxOn);
       getPromoSettings().then((s) => {
         setPromoEnabled(s.promo_enabled);
         setPromoDiscount(String(s.promo_discount));
@@ -162,6 +166,17 @@ const AdminProducts = () => {
     }
   };
 
+  const handleTaxToggle = async (enabled: boolean) => {
+    setTaxOn(enabled);
+    try {
+      await setTaxEnabled(enabled);
+      toast.success(enabled ? "Tax (7.5%) switched on" : "Tax switched off");
+    } catch {
+      setTaxOn(!enabled);
+      toast.error("Couldn't update tax setting. Has migration_09 been run?");
+    }
+  };
+
   const handlePromoChange = async (
     product: Product,
     promo: boolean,
@@ -195,6 +210,25 @@ const AdminProducts = () => {
   return (
     <div className="max-w-screen-2xl mx-auto pt-20 px-5 pb-24 max-[400px]:px-3">
       <h1 className="text-3xl font-bold mb-8">Manage Products</h1>
+
+      <div className="flex gap-4 mb-6 text-sm">
+        <span className="font-semibold underline">Products</span>
+        <Link to="/admin/orders" className="text-brand underline">
+          Orders
+        </Link>
+      </div>
+
+      <div className="bg-white border border-gray-200 p-5 mb-6 max-w-3xl flex items-center gap-2">
+        <input
+          type="checkbox"
+          id="taxOn"
+          checked={taxOn}
+          onChange={(e) => handleTaxToggle(e.target.checked)}
+        />
+        <label htmlFor="taxOn" className="text-sm font-medium text-gray-700">
+          Charge 7.5% tax on orders (untick to exclude tax from carts and orders)
+        </label>
+      </div>
 
       <div className="bg-white border border-gray-200 p-5 mb-12 max-w-3xl flex flex-wrap items-end gap-6">
         <h2 className="w-full text-lg font-medium">Promo of the day</h2>
@@ -251,7 +285,7 @@ const AdminProducts = () => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Price ($)</label>
+          <label className="block text-sm font-medium text-gray-700">Price (₦)</label>
           <input
             type="number"
             min="0"
@@ -357,7 +391,7 @@ const AdminProducts = () => {
                 <td className="py-2 px-4 border-b">{product.title}</td>
                 <td className="py-2 px-4 border-b">{product.category}</td>
                 <td className="py-2 px-4 border-b">{product.type}</td>
-                <td className="py-2 px-4 border-b">${product.price}</td>
+                <td className="py-2 px-4 border-b">{formatNaira(product.price)}</td>
                 <td className="py-2 px-4 border-b">
                   <input
                     type="number"

@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { getOrder, OrderRow, OrderItemRow } from "../lib/orderHistory";
 import { formatDate } from "../utils/formatDate";
+import { formatNaira } from "../utils/formatNaira";
 
 const SingleOrderHistory = () => {
   const navigate = useNavigate();
@@ -57,8 +58,8 @@ const SingleOrderHistory = () => {
       <div className="bg-white border border-gray-200 p-5 overflow-x-auto">
         <h2 className="text-2xl font-semibold mb-4">Order ID: {order.id}</h2>
         <p className="mb-2">Date: {formatDate(order.created_at)}</p>
-        <p className="mb-2">Items subtotal: ${itemsSubtotal.toFixed(2)}</p>
-        <p className="mb-2">Total: ${order.total.toFixed(2)}</p>
+        <p className="mb-2">Items subtotal: {formatNaira(itemsSubtotal)}</p>
+        <p className="mb-2">Total: {formatNaira(order.total)}</p>
         <p className="mb-2 capitalize">Payment method: {order.payment_method}</p>
         <p className="mb-2 capitalize">Status: {order.status}</p>
         {order.shipping_address && (
@@ -86,7 +87,7 @@ const SingleOrderHistory = () => {
                 <td className="py-3 px-4 border-b">{item.title}</td>
                 <td className="py-3 px-4 border-b text-center">{item.quantity}</td>
                 <td className="py-3 px-4 border-b text-right">
-                  ${item.price.toFixed(2)}
+                  {formatNaira(item.price)}
                 </td>
               </tr>
             ))}

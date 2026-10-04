@@ -57,9 +57,14 @@ const Header = () => {
             </Link>
           )}
           {isAdmin && (
-            <Link to="/admin/products" className={navLinkClass}>
-              Admin
-            </Link>
+            <>
+              <Link to="/admin/products" className={navLinkClass}>
+                Admin
+              </Link>
+              <Link to="/admin/orders" className={navLinkClass}>
+                Orders
+              </Link>
+            </>
           )}
         </nav>
 

@@ -1,7 +1,6 @@
 import {
   HiCheck as CheckIcon,
   HiXMark as XMarkIcon,
-  HiQuestionMarkCircle as QuestionMarkCircleIcon,
 } from "react-icons/hi2";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import { Link } from "react-router-dom";
@@ -10,9 +9,17 @@ import {
   updateProductQuantity,
 } from "../features/cart/cartSlice";
 import toast from "react-hot-toast";
+import { formatNaira } from "../utils/formatNaira";
+import { useEffect, useState } from "react";
+import { computeTax, getTaxEnabled } from "../lib/tax";
 
 const Cart = () => {
   const { productsInCart, subtotal } = useAppSelector((state) => state.cart);
+  const [taxEnabled, setTaxEnabledState] = useState(true);
+  useEffect(() => {
+    getTaxEnabled().then(setTaxEnabledState);
+  }, []);
+  const tax = computeTax(subtotal, taxEnabled);
   const dispatch = useAppDispatch();
 
   return (
@@ -63,7 +70,7 @@ const Cart = () => {
                           ) : null}
                         </div>
                         <p className="mt-1 text-sm font-medium text-gray-900">
-                          ${product.price}
+                          {formatNaira(product.price)}
                         </p>
                       </div>
 
@@ -145,55 +152,29 @@ const Cart = () => {
               <div className="flex items-center justify-between">
                 <dt className="text-sm text-gray-600">Subtotal</dt>
                 <dd className="text-sm font-medium text-gray-900">
-                  ${subtotal}
+                  {formatNaira(subtotal)}
                 </dd>
               </div>
               <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-                <dt className="flex items-center text-sm text-gray-600">
-                  <span>Shipping estimate</span>
-                  <a
-                    href="#"
-                    className="ml-2 flex-shrink-0 text-gray-400 hover:text-gray-500"
-                  >
-                    <span className="sr-only">
-                      Learn more about how shipping is calculated
-                    </span>
-                    <QuestionMarkCircleIcon
-                      className="h-5 w-5 text-brand"
-                      aria-hidden="true"
-                    />
-                  </a>
-                </dt>
-                <dd className="text-sm font-medium text-gray-900">
-                  ${subtotal === 0 ? 0 : 5.0}
+                <dt className="text-sm text-gray-600">Shipping</dt>
+                <dd className="text-sm text-gray-500 text-right">
+                  Agreed with the seller on WhatsApp
                 </dd>
               </div>
-              <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-                <dt className="flex text-sm text-gray-600">
-                  <span>Tax estimate</span>
-                  <a
-                    href="#"
-                    className="ml-2 flex-shrink-0 text-gray-400 hover:text-gray-500"
-                  >
-                    <span className="sr-only">
-                      Learn more about how tax is calculated
-                    </span>
-                    <QuestionMarkCircleIcon
-                      className="h-5 w-5 text-brand"
-                      aria-hidden="true"
-                    />
-                  </a>
-                </dt>
-                <dd className="text-sm font-medium text-gray-900">
-                  ${subtotal / 5}
-                </dd>
-              </div>
+              {taxEnabled && (
+                <div className="flex items-center justify-between border-t border-gray-200 pt-4">
+                  <dt className="text-sm text-gray-600">Tax (7.5%)</dt>
+                  <dd className="text-sm font-medium text-gray-900">
+                    {formatNaira(tax)}
+                  </dd>
+                </div>
+              )}
               <div className="flex items-center justify-between border-t border-gray-200 pt-4">
                 <dt className="text-base font-medium text-gray-900">
-                  Order total
+                  Order total (excl. shipping)
                 </dt>
                 <dd className="text-base font-medium text-gray-900">
-                  ${subtotal === 0 ? 0 : subtotal + subtotal / 5 + 5}
+                  {formatNaira(subtotal + tax)}
                 </dd>
               </div>
             </dl>

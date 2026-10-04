@@ -4,6 +4,7 @@ import {
   CategoryNav,
   CategoriesSection,
   HomeCollectionSection,
+  NewArrivalsSection,
   PromoHero,
 } from "../components";
 import { getProducts } from "../lib/products";
@@ -21,6 +22,7 @@ const Landing = () => {
     <>
       <Banner />
       <CategoryNav />
+      <NewArrivalsSection products={products} />
       <HomeCollectionSection products={products} />
       <PromoHero />
       <CategoriesSection products={products} />

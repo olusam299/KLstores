@@ -14,6 +14,7 @@ import {
   SingleProduct,
   UserProfile,
   AdminProducts,
+  AdminOrders,
 } from "./pages";
 import { searchAction } from "./actions/index";
 import { shopCategoryLoader } from "./pages/Shop";
@@ -80,6 +81,10 @@ const router = createBrowserRouter([
       {
         path: "admin/products",
         element: <AdminProducts />,
+      },
+      {
+        path: "admin/orders",
+        element: <AdminOrders />,
       },
     ],
   },
