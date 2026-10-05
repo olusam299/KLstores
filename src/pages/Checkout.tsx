@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import { supabase } from "../lib/supabase";
 import { createOrder } from "../lib/orders";
 import { formatNaira } from "../utils/formatNaira";
+import { STORE_NAME, WHATSAPP_NUMBER } from "../config/store";
 import { computeTax, getTaxEnabled } from "../lib/tax";
 
 const inputClass =
@@ -125,7 +126,7 @@ const Checkout = () => {
       .join("\n");
 
     const message =
-      `Hi KLstores! I'd like to pay for my order.\n\n` +
+      `Hi ${STORE_NAME}! I'd like to pay for my order.\n\n` +
       `${itemLines}\n\n` +
       `Total (excl. shipping): ${formatNaira(total)}\n\n` +
       `Please let me know the delivery fee.\n\n` +
@@ -133,8 +134,7 @@ const Checkout = () => {
       `Phone: ${contact.phone}\n` +
       `Delivery address: ${contact.address}`;
 
-    const whatsappNumber = import.meta.env.VITE_WHATSAPP_NUMBER as string;
-    const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
     window.open(url, "_blank");
 
     dispatch(clearCart());

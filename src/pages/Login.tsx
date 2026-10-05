@@ -71,6 +71,12 @@ const Login = () => {
         </div>
         <Button type="submit" text="Login" mode="brown" />
         <Link
+          to="/forgot-password"
+          className="text-lg max-md:text-base max-[450px]:text-sm text-brand"
+        >
+          Forgot your password?
+        </Link>
+        <Link
           to="/register"
           className="text-xl max-md:text-lg max-[450px]:text-sm"
         >

@@ -15,6 +15,11 @@ import {
   UserProfile,
   AdminProducts,
   AdminOrders,
+  ForgotPassword,
+  ResetPassword,
+  PrivacyPolicy,
+  CookiePolicy,
+  LegalNotes,
 } from "./pages";
 import { searchAction } from "./actions/index";
 import { shopCategoryLoader } from "./pages/Shop";
@@ -86,6 +91,11 @@ const router = createBrowserRouter([
         path: "admin/orders",
         element: <AdminOrders />,
       },
+      { path: "forgot-password", element: <ForgotPassword /> },
+      { path: "reset-password", element: <ResetPassword /> },
+      { path: "privacy-policy", element: <PrivacyPolicy /> },
+      { path: "cookie-policy", element: <CookiePolicy /> },
+      { path: "legal-notes", element: <LegalNotes /> },
     ],
   },
 ]);

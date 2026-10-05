@@ -5,7 +5,7 @@ import {
   QuantityInput,
   StandardSelectInput,
 } from "../components";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { addProductToTheCart } from "../features/cart/cartSlice";
 import { useAppDispatch } from "../hooks";
@@ -25,6 +25,7 @@ const SingleProduct = () => {
   const [quantity, setQuantity] = useState<number>(1);
   const params = useParams<{ id: string }>();
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
 
   // defining HOC instances
   const SelectInputUpgrade = WithSelectInputWrapper(StandardSelectInput);
@@ -43,12 +44,13 @@ const SingleProduct = () => {
     fetchProducts();
   }, [params.id]);
 
-  const handleAddToCart = () => {
-    if (!singleProduct) return;
+  // Returns true when the item was added.
+  const handleAddToCart = (): boolean => {
+    if (!singleProduct) return false;
 
     if (singleProduct.stock <= 0) {
       toast.error("This product is out of stock");
-      return;
+      return false;
     }
 
     const safeQuantity = Math.max(1, Math.min(quantity || 1, singleProduct.stock));
@@ -71,6 +73,11 @@ const SingleProduct = () => {
       })
     );
     toast.success("Product added to the cart");
+    return true;
+  };
+
+  const handleCheckoutNow = () => {
+    if (handleAddToCart()) navigate("/checkout");
   };
 
   return (
@@ -142,9 +149,10 @@ const SingleProduct = () => {
             )}
           </div>
           <div className="flex flex-col gap-3">
-            <Button mode="brown" text="Add to cart" onClick={handleAddToCart} />
+            <Button mode="brown" text="Add to cart" onClick={() => handleAddToCart()} />
+            <Button mode="white" text="Check out now" onClick={handleCheckoutNow} />
             <p className="text-brand text-sm text-right">
-              Delivery estimated on the Friday, July 26
+              Delivery fee and timing are agreed with the seller on WhatsApp
             </p>
           </div>
           <div>

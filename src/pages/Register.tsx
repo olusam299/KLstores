@@ -107,6 +107,17 @@ const Register = () => {
             />
           </div>
         </div>
+        <p className="text-sm text-gray-600 text-center">
+          By registering you agree to our{" "}
+          <Link to="/legal-notes" className="text-brand underline">
+            Legal Notes
+          </Link>{" "}
+          and{" "}
+          <Link to="/privacy-policy" className="text-brand underline">
+            Privacy Policy
+          </Link>
+          .
+        </p>
         <Button type="submit" text="Register" mode="brown" />
         <Link
           to="/login"

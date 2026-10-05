@@ -1,3 +1,8 @@
+export { default as ForgotPassword } from "./ForgotPassword";
+export { default as ResetPassword } from "./ResetPassword";
+export { default as PrivacyPolicy } from "./PrivacyPolicy";
+export { default as CookiePolicy } from "./CookiePolicy";
+export { default as LegalNotes } from "./LegalNotes";
 export { default as AdminOrders } from "./AdminOrders";
 export { default as HomeLayout } from "./HomeLayout";
 export { default as Landing } from "./Landing";

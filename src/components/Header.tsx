@@ -39,7 +39,7 @@ const Header = () => {
           to="/"
           className="text-4xl font-light tracking-[1.08px] max-sm:text-3xl max-[400px]:text-2xl text-brand"
         >
-          KLstores
+          KLCstores
         </Link>
 
         {/* Desktop nav: everything that lives in the mobile sidebar,
